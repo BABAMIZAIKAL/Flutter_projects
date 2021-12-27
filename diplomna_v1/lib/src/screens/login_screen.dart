@@ -15,48 +15,50 @@ class LoginScreenState extends State<LoginScreen>{
   String password = '';
   
   Widget build(context){
-    return Container(
-      height: double.infinity,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xffdddd33),
-            Color(0xffe0e047),
-            Color(0xffe3e35b),
-            Color(0xffe7e770),
-            Color(0xffeaea84),
-          ]
-        )
-      ),
-      child: Form(
-        key: formKey,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Sign in",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
+    return Scaffold(
+       body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xffdddd33),
+              Color(0xffe0e047),
+              Color(0xffe3e35b),
+              Color(0xffe7e770),
+              Color(0xffeaea84),
+            ]
+          )
+        ),
+        child: Form(
+          key: formKey,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Sign in",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              SizedBox(height:50),
-              usernameField(),
-              SizedBox(height:20),
-              passwordField(),
-              //SizedBox(height:20),
-              registerButton(),
-              submitButton(),
-            ],
-          ),
-        )
-      ),
+                SizedBox(height:50),
+                usernameField(),
+                SizedBox(height:20),
+                passwordField(),
+                //SizedBox(height:20),
+                registerButton(),
+                submitButton(),
+              ],
+            ),
+          )
+        ),
+      )
     );
   }
 
