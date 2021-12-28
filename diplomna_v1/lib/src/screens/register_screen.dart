@@ -1,9 +1,13 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:diplomna_v1/Database/DbHandler.dart';
+import 'package:diplomna_v1/Models/UserModel.dart';
+import 'package:diplomna_v1/Helper/DbHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:diplomna_v1/src/screens/login_screen.dart';
+import 'homepage.dart';
 
 class RegisterScreen extends StatefulWidget{
   createState(){
@@ -13,58 +17,92 @@ class RegisterScreen extends StatefulWidget{
 
 class RegisterScreenState extends State<RegisterScreen>{
   final formKeyRegister = GlobalKey<FormState>();
-  String usernameRegister = '';
-  String password1 = '';
-  String password2 = '';
 
+  final usernameRegister = TextEditingController();
+  final password1 = TextEditingController();
+  final password2 = TextEditingController();
+
+  var dbHandler;
+  @override
+  void initState() {
+    super.initState();
+    dbHandler = dbHandler();
+  }
+
+  signUp() async {
+    String uname = usernameRegister.text;
+    String passwd = password1.text;
+    String cpasswd = password2.text;
+
+    if (formKeyRegister.currentState!.validate()) {
+      if (passwd != cpasswd) {
+        //alertDialog(context, 'Password Mismatch');
+      } else {
+        formKeyRegister.currentState!.save();
+
+        UserModel uModel = UserModel(uname, passwd);
+        await dbHandler.saveData(uModel).then((userData) {
+          //alertDialog(context, "Successfully Saved");
+
+          Navigator.push(
+              context, MaterialPageRoute(builder: (_) => LoginScreen()));
+        }).catchError((error) {
+          print(error);
+          //alertDialog(context, "Error: Data Save Fail");
+        });
+      }
+    }
+  }
+
+  
   Widget build(context){
     return Scaffold(
-        body: Container(
-          height: double.infinity,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              // ignore: prefer_const_literals_to_create_immutables
-              colors: [
-                Color(0xffdddd33),
-                Color(0xffe0e047),
-                Color(0xffe3e35b),
-                Color(0xffe7e770),
-                Color(0xffeaea84),
-              ]
-            )
-          ),
-          child: Form(
-            key: formKeyRegister,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Sign in",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            // ignore: prefer_const_literals_to_create_immutables
+            colors: [
+              Color(0xffdddd33),
+              Color(0xffe0e047),
+              Color(0xffe3e35b),
+              Color(0xffe7e770),
+              Color(0xffeaea84),
+            ]
+          )
+        ),
+        child: Form(
+          key: formKeyRegister,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Sign in",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height:50),
-                  usernameField(),
-                  SizedBox(height:20),
-                  password1Field(),
-                  SizedBox(height:10),
-                  password2Field(),
-                  SizedBox(height: 20),
-                  registerButton(),
-                  submitButton(),
-                ],
-              ),
-            )
-          ),
-        )
+                ),
+                SizedBox(height:50),
+                usernameField(),
+                SizedBox(height:20),
+                password1Field(),
+                SizedBox(height:10),
+                password2Field(),
+                SizedBox(height: 20),
+                registerButton(),
+                submitButton(),
+              ],
+            ),
+          )
+        ),
+      )
     );
   }
 
@@ -75,14 +113,6 @@ class RegisterScreenState extends State<RegisterScreen>{
         labelText: "Username:",
         hintText: "Enter Username"
       ),
-      validator: (String? value){
-        if(value!.length < 4){
-          return "Your username must be atleast 4 characters";
-        }
-      },
-      onSaved: (String? value){
-        usernameRegister = value!;
-      },
     );
   }
   Widget password1Field(){
@@ -93,14 +123,6 @@ class RegisterScreenState extends State<RegisterScreen>{
         labelText: "Password:",
         hintText: "Enter Password"
       ),
-      validator: (String? value){
-        if(value!.length < 3){
-          return "Your password must be atleast 3 characters";
-        }
-      },
-      onSaved: (String? value){
-        password1 = value!;
-      },
     );
   }
   Widget password2Field(){
@@ -111,14 +133,6 @@ class RegisterScreenState extends State<RegisterScreen>{
         labelText: "Confirm Password:",
         hintText: "Enter Confirm Password"
       ),
-      validator: (String? value){
-        if(value != password1 ){
-          return "Your password must the same";
-        }
-      },
-      onSaved: (String? value){
-        password2 = value!;
-      },
     );
   }
 
@@ -128,7 +142,10 @@ class RegisterScreenState extends State<RegisterScreen>{
       primary: Colors.blue,
       ),
       onPressed: () { 
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => LoginScreen()));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+          (Route<dynamic> route) => false);
       },
       // ignore: prefer_const_constructors
       child: Text('Sign in')
@@ -143,12 +160,7 @@ class RegisterScreenState extends State<RegisterScreen>{
       ),
       // ignore: prefer_const_constructors
       child: Text("Submit!"),
-      onPressed: () {
-        if(formKeyRegister.currentState!.validate()){
-          formKeyRegister.currentState!.save();
-          print("Username: $usernameRegister --> Password: $password1");
-        }
-      },
+      onPressed: signUp,
     );
   }
 }

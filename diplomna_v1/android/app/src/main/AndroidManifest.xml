@@ -3,6 +3,8 @@
    <application
         android:label="diplomna_v1"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyDt5jpt47FJdKjgIZhhx6nTlvK9E2nowPM"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
