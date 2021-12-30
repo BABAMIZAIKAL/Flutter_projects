@@ -1,10 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:diplomna_v1/Database/DbHandler.dart';
+import 'package:diplomna_v1/Models/UserModel.dart';
+import 'package:diplomna_v1/Helper/DbHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:diplomna_v1/src/screens/login_screen.dart';
-
 import 'homepage.dart';
 
 class RegisterScreen extends StatefulWidget{
@@ -14,11 +16,47 @@ class RegisterScreen extends StatefulWidget{
 }
 
 class RegisterScreenState extends State<RegisterScreen>{
-  final formKeyRegister = GlobalKey<FormState>();
-  String usernameRegister = '';
-  String password1 = '';
-  String password2 = '';
+  final formKeyRegister = new GlobalKey<FormState>();
 
+  final usernameRegister = TextEditingController();
+  final password1 = TextEditingController();
+  final password2 = TextEditingController();
+
+  var dbHandler;
+  @override
+  void initState() {
+    super.initState();
+    dbHandler = DbHandler();
+  }
+
+  signUp() async {
+    String uname = usernameRegister.text;
+    String passwd = password1.text;
+    String cpasswd = password2.text;
+
+
+    if (formKeyRegister.currentState!.validate()) {
+      if (passwd != cpasswd) {
+        alertDialog(context, 'Password Mismatch');
+      } else {
+        formKeyRegister.currentState!.save();
+        print("Data1: $uname $passwd $cpasswd");
+        //print("Data2: $usernameRegister $password1 $password2");
+        UserModel uModel = UserModel(uname, passwd);
+        await dbHandler.saveData(uModel).then((userData) {
+          alertDialog(context, "Successfully Saved");
+
+          Navigator.push(
+              context, MaterialPageRoute(builder: (_) => LoginScreen()));
+        }).catchError((error) {
+          print(error);
+          alertDialog(context, "Error: Data Save Fail");
+        });
+      }
+    }
+  }
+
+  
   Widget build(context){
     return Scaffold(
       body: Container(
@@ -46,7 +84,7 @@ class RegisterScreenState extends State<RegisterScreen>{
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Sign in",
+                  "Sign up",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 40,
@@ -71,56 +109,72 @@ class RegisterScreenState extends State<RegisterScreen>{
   }
 
   Widget usernameField(){
-    return TextFormField(
-      // ignore: prefer_const_constructors
-      decoration: InputDecoration(
-        labelText: "Username:",
-        hintText: "Enter Username"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: usernameRegister,
+        obscureText: false,
+        enabled: true,
+        keyboardType: TextInputType.name,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter username';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Username',
+          labelText: 'Username',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
-      validator: (String? value){
-        if(value!.length < 4){
-          return "Your username must be atleast 4 characters";
-        }
-      },
-      onSaved: (String? value){
-        usernameRegister = value!;
-      },
     );
   }
   Widget password1Field(){
-    return TextFormField(
-      obscureText: true,
-      // ignore: prefer_const_constructors
-      decoration: InputDecoration(
-        labelText: "Password:",
-        hintText: "Enter Password"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: password1,
+        obscureText: true,
+        enabled: true,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter password';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Password',
+          labelText: 'Password',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
-      validator: (String? value){
-        if(value!.length < 3){
-          return "Your password must be atleast 3 characters";
-        }
-      },
-      onSaved: (String? value){
-        password1 = value!;
-      },
     );
   }
   Widget password2Field(){
-    return TextFormField(
-      obscureText: true,
-      // ignore: prefer_const_constructors
-      decoration: InputDecoration(
-        labelText: "Confirm Password:",
-        hintText: "Enter Confirm Password"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: password2,
+        obscureText: true,
+        enabled: true,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter confirmation password';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Confirm Password',
+          labelText: 'Confirm Password',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
-      validator: (String? value){
-        if(value != password1 ){
-          return "Your password must the same";
-        }
-      },
-      onSaved: (String? value){
-        password2 = value!;
-      },
     );
   }
 
@@ -130,7 +184,10 @@ class RegisterScreenState extends State<RegisterScreen>{
       primary: Colors.blue,
       ),
       onPressed: () { 
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => LoginScreen()));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+          (Route<dynamic> route) => false);
       },
       // ignore: prefer_const_constructors
       child: Text('Sign in')
@@ -145,13 +202,7 @@ class RegisterScreenState extends State<RegisterScreen>{
       ),
       // ignore: prefer_const_constructors
       child: Text("Submit!"),
-      onPressed: () {
-        if(formKeyRegister.currentState!.validate()){
-          formKeyRegister.currentState!.save();
-          print("Username: $usernameRegister --> Password: $password1");
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage()));
-        }
-      },
+      onPressed: signUp,
     );
   }
 }

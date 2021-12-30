@@ -34,6 +34,12 @@ class HomepageState extends State<Homepage>{
                 Navigator.of(context).push(MaterialPageRoute(builder: (context) => Map()));
               },
             ),
+            ListTile(
+              title: const Text('Map'),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => Map()));
+              },
+            ),
           ],
         ),
       ),

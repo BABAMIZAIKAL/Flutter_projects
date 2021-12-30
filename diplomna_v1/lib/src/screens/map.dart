@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, unnecessary_new
 
+import 'package:diplomna_v1/src/screens/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -27,6 +28,12 @@ class MapState extends State<Map>{
             new DrawerHeader(
               child: Text("Map drawer"),
               decoration: new BoxDecoration(color: Colors.blueGrey),
+            ),
+            ListTile(
+              title: const Text('Homepage'),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage()));
+              },
             ),
           ],
         ),
