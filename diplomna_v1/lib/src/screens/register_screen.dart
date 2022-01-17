@@ -16,7 +16,7 @@ class RegisterScreen extends StatefulWidget{
 }
 
 class RegisterScreenState extends State<RegisterScreen>{
-  final formKeyRegister = GlobalKey<FormState>();
+  final formKeyRegister = new GlobalKey<FormState>();
 
   final usernameRegister = TextEditingController();
   final password1 = TextEditingController();
@@ -26,7 +26,7 @@ class RegisterScreenState extends State<RegisterScreen>{
   @override
   void initState() {
     super.initState();
-    dbHandler = dbHandler();
+    dbHandler = DbHandler();
   }
 
   signUp() async {
@@ -34,21 +34,23 @@ class RegisterScreenState extends State<RegisterScreen>{
     String passwd = password1.text;
     String cpasswd = password2.text;
 
+
     if (formKeyRegister.currentState!.validate()) {
       if (passwd != cpasswd) {
-        //alertDialog(context, 'Password Mismatch');
+        alertDialog(context, 'Password Mismatch');
       } else {
         formKeyRegister.currentState!.save();
-
+        print("Data1: $uname $passwd $cpasswd");
+        //print("Data2: $usernameRegister $password1 $password2");
         UserModel uModel = UserModel(uname, passwd);
         await dbHandler.saveData(uModel).then((userData) {
-          //alertDialog(context, "Successfully Saved");
+          alertDialog(context, "Successfully Saved");
 
           Navigator.push(
               context, MaterialPageRoute(builder: (_) => LoginScreen()));
         }).catchError((error) {
           print(error);
-          //alertDialog(context, "Error: Data Save Fail");
+          alertDialog(context, "Error: Data Save Fail");
         });
       }
     }
@@ -82,7 +84,7 @@ class RegisterScreenState extends State<RegisterScreen>{
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Sign in",
+                  "Sign up",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 40,
@@ -107,31 +109,71 @@ class RegisterScreenState extends State<RegisterScreen>{
   }
 
   Widget usernameField(){
-    return TextFormField(
-      // ignore: prefer_const_constructors
-      decoration: InputDecoration(
-        labelText: "Username:",
-        hintText: "Enter Username"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: usernameRegister,
+        obscureText: false,
+        enabled: true,
+        keyboardType: TextInputType.name,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter username';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Username',
+          labelText: 'Username',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
     );
   }
   Widget password1Field(){
-    return TextFormField(
-      obscureText: true,
-      // ignore: prefer_const_constructors
-      decoration: InputDecoration(
-        labelText: "Password:",
-        hintText: "Enter Password"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: password1,
+        obscureText: true,
+        enabled: true,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter password';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Password',
+          labelText: 'Password',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
     );
   }
   Widget password2Field(){
-    return TextFormField(
-      obscureText: true,
-      // ignore: prefer_const_constructors
-      decoration: InputDecoration(
-        labelText: "Confirm Password:",
-        hintText: "Enter Confirm Password"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: password2,
+        obscureText: true,
+        enabled: true,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter confirmation password';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Confirm Password',
+          labelText: 'Confirm Password',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
     );
   }

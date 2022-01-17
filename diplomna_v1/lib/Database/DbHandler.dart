@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io' as io;
 
-class DbHelper {
+class DbHandler {
   static Database? _db;
 
   static const String DB_Name = 'test.db';

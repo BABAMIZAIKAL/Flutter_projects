@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:diplomna_v1/Database/DbHandler.dart';
 import 'package:diplomna_v1/Helper/DbHelper.dart';
 import 'package:diplomna_v1/Models/UserModel.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class LoginScreenState extends State<LoginScreen>{
   @override
   void initState() {
     super.initState();
-    dbHandler = dbHandler();
+    dbHandler = DbHandler();
   }
 
   login() async {
@@ -61,10 +62,10 @@ class LoginScreenState extends State<LoginScreen>{
     final SharedPreferences sp = await preferences;
     //String? temp_username = user.user_name;
     //String? temp_password = user.password;
-    //if(user.user_name != null && user.password != null){
-    sp.setString("user_name", user.user_name);
-    sp.setString("password", user.password);
-    //}
+    if(user.user_name != null && user.password != null){
+      sp.setString("user_name", user.user_name ?? "");
+      sp.setString("password", user.password ?? "");
+    }
   }
 
   
@@ -118,19 +119,48 @@ class LoginScreenState extends State<LoginScreen>{
   }
 
   Widget usernameField(){
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: "Username:",
-        hintText: "username"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: username,
+        obscureText: false,
+        enabled: true,
+        keyboardType: TextInputType.name,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter username';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Username',
+          labelText: 'Username',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
     );
   }
   Widget passwordField(){
-    return TextFormField(
-      obscureText: true,
-      decoration: InputDecoration(
-        labelText: "Enter Password:",
-        hintText: "Password"
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: TextFormField(
+        controller: password,
+        obscureText: true,
+        enabled: true,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter password';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Password',
+          labelText: 'Password',
+          fillColor: Colors.grey[200],
+          filled: true,
+        ),
       ),
     );
   }
