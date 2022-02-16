@@ -32,7 +32,7 @@ class MapState extends State<Map>{
   List<LatLng> polygonLatLngs = <LatLng>[];
   int _polygonIdCounter = 1;
 
-  //Future<Pitch> pitches = <Pitch>[] as Future<Pitch>;
+  List<Pitch> pitches = [];
 
 
 
@@ -58,10 +58,18 @@ class MapState extends State<Map>{
     final response = await http.get(Uri.parse('http://188.166.195.82:80/apigw/rest/api/v1/pitch/locate?latitude=42.6585174&longitude=23.3543216&radius=5000&type=FOOTBALL'), headers: headers );
 
 
+
     if (response.statusCode == 401) {
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage()));
     }
     if (response.statusCode == 200) {
+      var jsonData = jsonDecode(response.body);
+      for(var p in jsonData){
+        Pitch pitch = Pitch(id: p['id'], name: p['name'], type: p['type'], location: p['location'], rolesRequired: p['rolesRequired'], wayId: p['wayId'], tags: p['tags']);
+        print(p);
+        print("here");
+        pitches.add(pitch);
+      }
       return Pitch.fromJson(jsonDecode(response.body));
     } else {
       // If the server did not return a 200 OK response,
@@ -97,10 +105,12 @@ class MapState extends State<Map>{
 
   Widget build(context){
 
+
+
     _setCustomPolygon();
     _setPolygon();
     fetchAlbum();
-    //print(pitches);
+    print(pitches);
 
     return Scaffold(
       drawer: new Drawer(
