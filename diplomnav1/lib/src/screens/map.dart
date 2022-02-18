@@ -2,8 +2,11 @@
 
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:ffi';
 
+import 'package:diplomnav1/src/Pitch/location.dart';
 import 'package:diplomnav1/src/Pitch/pitch.dart';
+import 'package:diplomnav1/src/Pitch/tags.dart';
 import 'package:diplomnav1/src/screens/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -32,7 +35,7 @@ class MapState extends State<Map>{
   List<LatLng> polygonLatLngs = <LatLng>[];
   int _polygonIdCounter = 1;
 
-  List<Pitch> pitches = [];
+
 
 
 
@@ -49,14 +52,11 @@ class MapState extends State<Map>{
     print("polygon");
   }
 
-  Future<Pitch> fetchAlbum() async {
-
+  void fetchPitches() async {
     var headers = {
       "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
     };
-    print(await SecureStorage.getToken() as String);
     final response = await http.get(Uri.parse('http://188.166.195.82:80/apigw/rest/api/v1/pitch/locate?latitude=42.6585174&longitude=23.3543216&radius=5000&type=FOOTBALL'), headers: headers );
-
 
 
     if (response.statusCode == 401) {
@@ -65,52 +65,37 @@ class MapState extends State<Map>{
     if (response.statusCode == 200) {
       var jsonData = jsonDecode(response.body);
       for(var p in jsonData){
-        Pitch pitch = Pitch(id: p['id'], name: p['name'], type: p['type'], location: p['location'], rolesRequired: p['rolesRequired'], wayId: p['wayId'], tags: p['tags']);
-        print(p);
-        print("here");
-        pitches.add(pitch);
+        List<LatLng> coords = [];
+        for (List<dynamic> coord in p['location']['coordinates']) {
+          coords.add(LatLng(coord[0],coord[1]));
+        }
+        PitchLocation pitchLocation = PitchLocation(type: p['location']['type'], coordinates: coords , node_ids: p['location']['node_ids']);
+        Pitch pitch1 = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, wayId: p['wayId'], rolesRequired: ['rolesRequired']);
+        print(pitch1.toString());
+        _polygons.add(convertPitchToPolygon(pitch1));
       }
-      return Pitch.fromJson(jsonDecode(response.body));
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to load album');
+      throw Exception('Failed to load pitches');
     }
   }
 
-  void _setPolygon() {
-    final String polygonIdVal = 'polygon_id_$_polygonIdCounter';
-    _polygons.add(Polygon(
-      polygonId: PolygonId(polygonIdVal),
-      points: polygonLatLngs,
-      strokeWidth: 5,
-      strokeColor: Colors.yellow,
-      fillColor: Colors.yellow.withOpacity(0.15),
-      consumeTapEvents: true,
-      onTap: () {
-        _testPolygon();
-      }
-    ));
-  }
-  void _setCustomPolygon(){
-    LatLng point1 = new LatLng(42.662569, 23.299392);
-    LatLng point2 = new LatLng(42.662976, 23.299625);
-    LatLng point3 = new LatLng(42.663124, 23.299011);
-    LatLng point4 = new LatLng(42.662803, 23.298963);
-    polygonLatLngs.add(point1);
-    polygonLatLngs.add(point2);
-    polygonLatLngs.add(point3);
-    polygonLatLngs.add(point4);
+  static Polygon convertPitchToPolygon(Pitch a){
+    List<LatLng> points = a.location.coordinates;
+      return(Polygon(
+        polygonId: PolygonId(a.id),
+        points: points,
+        fillColor: Colors.yellow,
+        strokeWidth: 5,
+      ));
   }
 
   Widget build(context){
 
-
-
-    _setCustomPolygon();
-    _setPolygon();
-    fetchAlbum();
-    print(pitches);
+    fetchPitches();
+    print("HERE 1");
+    for(Polygon p in _polygons){
+      print(p);
+    }
 
     return Scaffold(
       drawer: new Drawer(
