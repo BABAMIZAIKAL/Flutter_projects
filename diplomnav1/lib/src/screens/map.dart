@@ -7,7 +7,9 @@ import 'dart:ffi';
 import 'package:diplomnav1/src/Pitch/location.dart';
 import 'package:diplomnav1/src/Pitch/pitch.dart';
 import 'package:diplomnav1/src/Pitch/tags.dart';
+import 'package:diplomnav1/src/Request/sendRequest.dart';
 import 'package:diplomnav1/src/screens/homepage.dart';
+import 'package:diplomnav1/src/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -28,13 +30,10 @@ class Map extends StatefulWidget{
 class MapState extends State<Map>{
 
   LatLng sofiaLocation = new LatLng(42.698334, 23.319941);
-  //final storage = SecureStorage();
-  //String token = SecureStorage.getToken() as String;
 
   Set<Polygon> _polygons = HashSet<Polygon>();
   List<LatLng> polygonLatLngs = <LatLng>[];
-  int _polygonIdCounter = 1;
-
+  LocationData? currentLocation;
 
 
 
@@ -43,6 +42,8 @@ class MapState extends State<Map>{
   @override
   void initState() {
     super.initState();
+    currentLocation = widget.location;
+    fetchPitches();
   }
 
   void _testMap(LatLng a){
@@ -53,51 +54,51 @@ class MapState extends State<Map>{
   }
 
   void fetchPitches() async {
-    var headers = {
-      "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
-    };
-    final response = await http.get(Uri.parse('http://188.166.195.82:80/apigw/rest/api/v1/pitch/locate?latitude=42.6585174&longitude=23.3543216&radius=5000&type=FOOTBALL'), headers: headers );
+    String? currLat = currentLocation?.latitude.toString();
+    String? currLng = currentLocation?.longitude.toString();
 
-
-    if (response.statusCode == 401) {
+    // currLng = '42.698334';
+    // currLat = '23.319941';
+    String url = 'http://188.166.195.82:80/apigw/rest/api/v1/pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
+    print(url);
+    var jsonData = await sendRequest(url);
+    if(jsonData == 0){
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage()));
+      return;
     }
-    if (response.statusCode == 200) {
-      var jsonData = jsonDecode(response.body);
-      for(var p in jsonData){
-        List<LatLng> coords = [];
-        for (List<dynamic> coord in p['location']['coordinates']) {
-          coords.add(LatLng(coord[0],coord[1]));
-        }
-        PitchLocation pitchLocation = PitchLocation(type: p['location']['type'], coordinates: coords , node_ids: p['location']['node_ids']);
-        Pitch pitch1 = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, wayId: p['wayId'], rolesRequired: ['rolesRequired']);
-        print(pitch1.toString());
-        _polygons.add(convertPitchToPolygon(pitch1));
+    for(var p in jsonData){
+      List<LatLng> coords = [];
+      for (List<dynamic> coord in p['location']['coordinates']) {
+        coords.add(LatLng(coord[0],coord[1]));
       }
-    } else {
-      throw Exception('Failed to load pitches');
+      PitchLocation pitchLocation = PitchLocation(type: p['location']['type'], coordinates: coords , node_ids: p['location']['node_ids']);
+      Pitch pitch1 = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, wayId: p['wayId'], rolesRequired: ['rolesRequired']);
+      print(pitch1.toString());
+      setState(() {
+        setPolygon(convertPitchToPolygon(pitch1));
+      });
+      print(_polygons.length);
     }
+  }
+  void setPolygon(Polygon a){
+    _polygons.add(a);
   }
 
   static Polygon convertPitchToPolygon(Pitch a){
     List<LatLng> points = a.location.coordinates;
-      return(Polygon(
+      return Polygon(
         polygonId: PolygonId(a.id),
         points: points,
-        fillColor: Colors.yellow,
-        strokeWidth: 5,
-      ));
+        strokeColor: Colors.yellow,
+        fillColor: Colors.yellow.withOpacity(0.25),
+        consumeTapEvents: true,
+      );
   }
+
 
   Widget build(context){
 
-    fetchPitches();
-    print("HERE 1");
-    for(Polygon p in _polygons){
-      print(p);
-    }
-
-    return Scaffold(
+    return  Scaffold(
       drawer: new Drawer(
         child: ListView(
           children: <Widget>[
@@ -129,6 +130,7 @@ class MapState extends State<Map>{
             polygons: _polygons,
             myLocationEnabled: true,
             onTap: (LatLng a){
+
               _testMap(a);
             },
           ),
