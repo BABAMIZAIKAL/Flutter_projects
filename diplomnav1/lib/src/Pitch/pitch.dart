@@ -29,6 +29,15 @@ class Pitch {
     return 'Pitch{id: $id, name: $name, type: $type, location: $location, rolesRequired: $rolesRequired, wayId: $wayId}';
   }
 
+  String stringLocation(){
+    return '$location';
+  }
+
+  String stringWayIdtest(){
+    String stringWayId = wayId as String;
+    return stringWayId;
+  }
+
   factory Pitch.fromJson(Map<String, dynamic> json) {
     return Pitch(
       id: json['id'],

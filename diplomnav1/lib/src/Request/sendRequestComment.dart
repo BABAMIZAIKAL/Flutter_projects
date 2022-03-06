@@ -5,10 +5,10 @@ import 'package:diplomnav1/src/screens/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-sendRequest(var url, String type, var body) async {
+sendRequestComment(var url, String type, var body) async {
   var headers = {
     "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
-    "Content-type": "application/json",
+    "Content-type": "multipart/form-data",
   };
   var response;
 

@@ -63,24 +63,7 @@ class HomepageState extends State<Homepage>{
       appBar: new AppBar(
         title: new Text("Hello"),
       ),
-      body: Container(  
-
-        height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            // ignore: prefer_const_literals_to_create_immutables
-            colors: [
-              Color(0xffdddd33),
-              Color(0xffe0e047),
-              Color(0xffe3e35b),
-              Color(0xffe7e770),
-              Color(0xffeaea84),
-            ]
-          )
-        ),
+      body: SingleChildScrollView(
       )
     );
   }

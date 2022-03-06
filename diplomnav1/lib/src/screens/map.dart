@@ -10,6 +10,7 @@ import 'package:diplomnav1/src/Pitch/tags.dart';
 import 'package:diplomnav1/src/Request/sendRequest.dart';
 import 'package:diplomnav1/src/screens/homepage.dart';
 import 'package:diplomnav1/src/screens/login_screen.dart';
+import 'package:diplomnav1/src/screens/pitch_view.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -59,9 +60,9 @@ class MapState extends State<Map>{
 
     // currLng = '42.698334';
     // currLat = '23.319941';
-    String url = 'http://188.166.195.82:80/apigw/rest/api/v1/pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
+    String url = apiUrl + 'pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
     print(url);
-    var jsonData = await sendRequest(url);
+    var jsonData = await sendRequest(url, 'get', 'null');
     if(jsonData == 0){
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage()));
       return;
@@ -84,14 +85,24 @@ class MapState extends State<Map>{
     _polygons.add(a);
   }
 
-  static Polygon convertPitchToPolygon(Pitch a){
+  Polygon convertPitchToPolygon(Pitch a){
     List<LatLng> points = a.location.coordinates;
+    Polygon curr = new Polygon(
+      polygonId: PolygonId(a.id),
+      points: points,
+      strokeColor: Colors.yellow,
+      fillColor: Colors.yellow.withOpacity(0.25),
+      consumeTapEvents: true,
+    );
       return Polygon(
         polygonId: PolygonId(a.id),
         points: points,
         strokeColor: Colors.yellow,
         fillColor: Colors.yellow.withOpacity(0.25),
         consumeTapEvents: true,
+        onTap: (){
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => PitchView(sentPitch: a)));
+        }
       );
   }
 

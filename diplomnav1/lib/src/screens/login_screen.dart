@@ -1,11 +1,15 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:convert';
+
+import 'package:diplomnav1/src/Request/sendRequest.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:aad_oauth/model/config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 
 import 'homepage.dart';
 import 'package:diplomnav1/src/widgets/delay.dart';
@@ -16,6 +20,10 @@ class LoginScreen extends StatefulWidget{
     return LoginScreenState();
   }
 }
+
+String oid = '';
+String apiUrl = 'http://157.245.20.43/apigw/rest/api/v1/';
+String apiUsername = '';
 
 class LoginScreenState extends State<LoginScreen>{
 
@@ -50,16 +58,38 @@ class LoginScreenState extends State<LoginScreen>{
     try {
 
       await oauth.login();
+
       String? accessToken = await oauth.getAccessToken();
 
-      //await storage.write(key: "accessToken", value: accessToken);
-      SecureStorage.setToken(accessToken!);
-      SecureStorage.getToken();
+      Map<String, dynamic> payload = Jwt.parseJwt(accessToken!);
+      print(accessToken);
+      print(payload);
+      var userId = payload["oid"];
+      var username = payload["name"];
+      var mail = payload["emails"][0];
+      apiUsername = username;
 
-      //final String? storageToken = await storage.read(key: "accessToken");
-      //print(storageToken);
+      SecureStorage.setToken(accessToken);
+      SecureStorage.setOid(userId);
+      oid = userId;
+
+      if(payload.containsKey("newUser") && payload["newUser"] == true){
+        print(userId + username + mail);
+        String url = apiUrl + 'user';
+
+        Map data = {
+          'user_id': userId,
+          'username': username,
+          'email' : mail
+        };
+        //encode Map to JSON
+        var body = json.encode(data);
+
+        var jsonData = await sendRequest(url, 'post', body);
+      }
+
+
       if(accessToken != null){
-        //delay(10000);
         Future.delayed(Duration(seconds: 5),(){
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage()));
         });
@@ -80,24 +110,10 @@ class LoginScreenState extends State<LoginScreen>{
   Widget build(context){
     _logIn();
     return Scaffold(
-      body: Container(  
+      body: Container(
         height: double.infinity,
         width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            // ignore: prefer_const_literals_to_create_immutables
-            colors: [
-              Color(0xffdddd33),
-              Color(0xffe0e047),
-              Color(0xffe3e35b),
-              Color(0xffe7e770),
-              Color(0xffeaea84),
-            ]
-          ),
 
-        ),
         child: Form(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 15),
@@ -107,7 +123,7 @@ class LoginScreenState extends State<LoginScreen>{
                 Text(
                   "Sign in",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                   ),
