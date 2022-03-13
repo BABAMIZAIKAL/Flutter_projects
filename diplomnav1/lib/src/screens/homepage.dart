@@ -1,8 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 
+//import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'map.dart';
-import 'package:location/location.dart';
+//import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
+
 
 class Homepage extends StatefulWidget{
   createState(){
@@ -12,23 +16,26 @@ class Homepage extends StatefulWidget{
 
 class HomepageState extends State<Homepage>{
 
-  Location location = new Location();
-  late bool _serviceEnabled;
-  late PermissionStatus _permissionGranted;
-  late LocationData _locationData;
+  /*Location location = new Location();
+  bool? _serviceEnabled;
+  PermissionStatus? _permissionGranted;
+  LocationData? _locationData;*/
+  String latitudeData = "";
+  String longtitudeData = "";
 
   @override
   void initState() {
     super.initState();
-    _checkLocationPermission();
+    //_checkLocationPermission();
+    getCurrentLocation();
   }
 
   // Check Location Permissions, and get my location
-  void _checkLocationPermission() async {
+  /*void _checkLocationPermission() async {
     _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
+    if (!_serviceEnabled!) {
       _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
+      if (!_serviceEnabled!) {
         return;
       }
     }
@@ -39,10 +46,22 @@ class HomepageState extends State<Homepage>{
         return;
       }
     }
+    print("EVERYTHING OK");
+    print(location.serviceEnabled().toString());
+    print(location.hasPermission().toString());
+
     _locationData = await location.getLocation();
+  }*/
+  void getCurrentLocation() async{
+    var position = await Geolocator.getLastKnownPosition();
+    setState(() {
+      latitudeData = '${position?.latitude}';
+      longtitudeData = '${position?.longitude}';
+    });
   }
 
   Widget build(context){
+    //print(_locationData);
     return Scaffold(
       // ignore: unnecessary_new
       drawer: new Drawer(
@@ -54,8 +73,14 @@ class HomepageState extends State<Homepage>{
             ),
             ListTile(
               title: const Text('Map'),
-              onTap: () => _locationData != null ?Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => Map(location: _locationData,))) : null
+              onTap: () {
+                latitudeData != null && longtitudeData != null
+                    ? Navigator.push(
+                    context, MaterialPageRoute(
+                    builder: (context) => Map(geoLat: latitudeData!, geoLng: longtitudeData,)))
+                    : null;
+
+              }
             ),
           ],
         ),

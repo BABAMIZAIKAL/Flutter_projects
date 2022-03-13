@@ -15,7 +15,6 @@ sendRequest(var url, String type, var body) async {
   if (type == 'get') {
     response = await http.get(Uri.parse(url), headers: headers);
   } else if (type == 'post') {
-    print("post");
     response = await http.post(Uri.parse(url), headers: headers, body: body);
   } else if (type == 'patch') {
     response = await http.patch(Uri.parse(url), headers: headers, body: body);

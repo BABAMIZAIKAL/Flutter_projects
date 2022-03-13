@@ -22,7 +22,7 @@ class LoginScreen extends StatefulWidget{
 }
 
 String oid = '';
-String apiUrl = 'http://157.245.20.43/apigw/rest/api/v1/';
+String apiUrl = 'http://157.230.78.230/apigw/rest/api/v1/';
 String apiUsername = '';
 
 class LoginScreenState extends State<LoginScreen>{
@@ -72,10 +72,10 @@ class LoginScreenState extends State<LoginScreen>{
       SecureStorage.setToken(accessToken);
       SecureStorage.setOid(userId);
       oid = userId;
+      String url = apiUrl + 'user';
 
       if(payload.containsKey("newUser") && payload["newUser"] == true){
         print(userId + username + mail);
-        String url = apiUrl + 'user';
 
         Map data = {
           'user_id': userId,
@@ -86,6 +86,9 @@ class LoginScreenState extends State<LoginScreen>{
         var body = json.encode(data);
 
         var jsonData = await sendRequest(url, 'post', body);
+      }else{
+        var jsonDate = await sendRequest(url + '/' + oid, 'get', null);
+        print(jsonDate);
       }
 
 

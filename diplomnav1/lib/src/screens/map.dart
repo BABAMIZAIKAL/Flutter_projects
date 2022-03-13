@@ -13,15 +13,16 @@ import 'package:diplomnav1/src/screens/login_screen.dart';
 import 'package:diplomnav1/src/screens/pitch_view.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+//import 'package:location/location.dart';
 import 'package:diplomnav1/src/Storage/secureStorage.dart';
 import 'package:http/http.dart' as http;
 
 
 class Map extends StatefulWidget{
 
-  final LocationData location;
-  Map({required this.location});
+  final String geoLat;
+  final String geoLng;
+  Map({required this.geoLat, required this.geoLng});
 
   createState(){
     return MapState();
@@ -32,10 +33,10 @@ class MapState extends State<Map>{
 
   LatLng sofiaLocation = new LatLng(42.698334, 23.319941);
 
-  Set<Polygon> _polygons = HashSet<Polygon>();
+  var _polygons = new HashSet<Polygon>();
   List<LatLng> polygonLatLngs = <LatLng>[];
-  LocationData? currentLocation;
-
+  String? currLat;
+  String? currLng;
 
 
 
@@ -43,7 +44,8 @@ class MapState extends State<Map>{
   @override
   void initState() {
     super.initState();
-    currentLocation = widget.location;
+    currLat = widget.geoLat;
+    currLng = widget.geoLng;
     fetchPitches();
   }
 
@@ -55,11 +57,11 @@ class MapState extends State<Map>{
   }
 
   void fetchPitches() async {
-    String? currLat = currentLocation?.latitude.toString();
-    String? currLng = currentLocation?.longitude.toString();
+
 
     // currLng = '42.698334';
     // currLat = '23.319941';
+
     String url = apiUrl + 'pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
     print(url);
     var jsonData = await sendRequest(url, 'get', 'null');
@@ -73,16 +75,17 @@ class MapState extends State<Map>{
         coords.add(LatLng(coord[0],coord[1]));
       }
       PitchLocation pitchLocation = PitchLocation(type: p['location']['type'], coordinates: coords , node_ids: p['location']['node_ids']);
-      Pitch pitch1 = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, wayId: p['wayId'], rolesRequired: ['rolesRequired']);
-      print(pitch1.toString());
-      setState(() {
-        setPolygon(convertPitchToPolygon(pitch1));
-      });
-      print(_polygons.length);
+      Pitch pitch = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, wayId: p['wayId'], rolesRequired: ['rolesRequired']);
+      _polygons.add(convertPitchToPolygon(pitch));
     }
+    print(_polygons.length);
+    setState(() {
+      setPolygons(_polygons);
+    });
+
   }
-  void setPolygon(Polygon a){
-    _polygons.add(a);
+  void setPolygons(HashSet<Polygon> set){
+    _polygons.addAll(set);
   }
 
   Polygon convertPitchToPolygon(Pitch a){
