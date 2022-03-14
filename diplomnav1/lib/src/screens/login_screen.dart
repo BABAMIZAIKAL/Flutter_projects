@@ -22,7 +22,7 @@ class LoginScreen extends StatefulWidget{
 }
 
 String oid = '';
-String apiUrl = 'http://157.230.78.230/apigw/rest/api/v1/';
+String apiUrl = 'http://sportonapp.me/apigw/rest/api/v1';
 String apiUsername = '';
 
 class LoginScreenState extends State<LoginScreen>{
@@ -72,7 +72,7 @@ class LoginScreenState extends State<LoginScreen>{
       SecureStorage.setToken(accessToken);
       SecureStorage.setOid(userId);
       oid = userId;
-      String url = apiUrl + 'user';
+      String url = apiUrl + '/user';
 
       if(payload.containsKey("newUser") && payload["newUser"] == true){
         print(userId + username + mail);

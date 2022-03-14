@@ -7,7 +7,7 @@ class Comment extends StatelessWidget {
 
   String comment_name;
   String comment_text;
-  File? comment_image;
+  String? comment_image;
 
   //Comment(this.comment_name, this.comment_text);
 

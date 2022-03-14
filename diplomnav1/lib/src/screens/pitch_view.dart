@@ -47,17 +47,18 @@ class PitchViewState extends State<PitchView>{
   double rating = 0;
   File? image;
   String currComment = "";
+  var headersImg;
 
   void getRequestPitchComments() async{
-    String url = apiUrl + "comment/all?pitchId=" + currentPitch.id;
+    String url = apiUrl + "/comment/all?pitchId=" + currentPitch.id;
     var jsonData = await sendRequest(url, 'get', null);
     comments = [];
 
     for(var p in jsonData){
       if(p["attachment_uri"] != null){
-        File currImg = await urlToFile(p["attachment_uri"]);
+        //File currImg = await urlToFile(p["attachment_uri"]);
         setState(() {
-          comments.add(new Comment(p["user_id"], p["content"], currImg));
+          comments.add(new Comment(p["user_id"], p["content"], p["attachment_uri"]));
         });
       }else{
         setState(() {
@@ -67,13 +68,19 @@ class PitchViewState extends State<PitchView>{
     }
   }
   void getRequestPitchRating() async{
-    String url = apiUrl + "rating/average?pitchId=" + currentPitch.id;
+    String url = apiUrl + "/rating/average?pitchId=" + currentPitch.id;
     var jsonData = await sendRequest(url, 'get', null);
     double average_rating = jsonData["average_rating"];
     print("average_rating = $average_rating" );
     setState(() {
       rating = average_rating;
     });
+  }
+  void setCommentHeaders() async{
+    headersImg = {
+      "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
+      "Content-type": "image/jpeg",
+    };
   }
 
   @override
@@ -82,10 +89,12 @@ class PitchViewState extends State<PitchView>{
     currentPitch = widget.sentPitch;
     getRequestPitchComments();
     getRequestPitchRating();
+    setCommentHeaders();
   }
 
   Widget build(context){
-    
+
+
     image = null;
 
     print("rating");
@@ -158,6 +167,7 @@ class PitchViewState extends State<PitchView>{
                   child: Column(
                     children: [
                       ListView.builder(
+
                         //controller: new FixedExtentScrollController(),
                         //scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
@@ -171,8 +181,8 @@ class PitchViewState extends State<PitchView>{
                                   title: Text(com.comment_name),
                                   subtitle: Text(com.comment_text),
                                 ),
-                                com.comment_image?.path != null ?
-                                Image.asset(com.comment_image!.path) : Container(
+                                com.comment_image != null ?
+                                Image.network(apiUrl + com.comment_image!, headers: headersImg) : Container(
                                   child: SizedBox(height: 15),
                                 ),
                               ],
@@ -188,21 +198,16 @@ class PitchViewState extends State<PitchView>{
                       ElevatedButton(
                         onPressed: () async {
                           if(image == null){
-                            String url = apiUrl + 'comment/?user_id=' + apiUsername + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
+                            String url = apiUrl + '/comment/?user_id=' + apiUsername + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
                             var dio = Dio();
                             try {
-                              var headers = {
-                                "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
-                                "Content-type": "image/jpeg",
-                              };
-                              //FormData formData = new FormData.fromMap(data);
                               var response = await dio.post(url, data: null, options: Options(headers: {"Authorization": "Bearer " + (await SecureStorage.getToken() as String)},));
                               print(response.data);
                             } catch (e) {
                               print(e);
                             }
                           }else{
-                            String url = apiUrl + 'comment/?user_id=' + apiUsername + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
+                            String url = apiUrl + '/comment/?user_id=' + apiUsername + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
                             var dio = Dio();
                             //Uint8List postImage = File(image!.path).readAsBytesSync();
                             List<int> imageBytes = await image!.readAsBytes();
@@ -277,7 +282,7 @@ class PitchViewState extends State<PitchView>{
           TextButton(
               onPressed: () async {
                 Navigator.pop(context);
-                String url = apiUrl + 'rating';
+                String url = apiUrl + '/rating';
 
 
                 Map data = {
@@ -313,16 +318,6 @@ class PitchViewState extends State<PitchView>{
     }on PlatformException catch (e){
       print("Failed to pick image: $e");
     }
-  }
-
-  Future<File> urlToFile(String imageUrl) async {
-    var rng = new Random();
-    Directory tempDir = await getTemporaryDirectory();
-    String tempPath = tempDir.path;
-    File file = new File('$tempPath'+ (rng.nextInt(100)).toString() +'.png');
-    http.Response response = await http.get(Uri.parse(imageUrl));
-    await file.writeAsBytes(response.bodyBytes);
-    return file;
   }
 
 }

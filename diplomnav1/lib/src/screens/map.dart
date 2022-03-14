@@ -62,7 +62,7 @@ class MapState extends State<Map>{
     // currLng = '42.698334';
     // currLat = '23.319941';
 
-    String url = apiUrl + 'pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
+    String url = apiUrl + '/pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
     print(url);
     var jsonData = await sendRequest(url, 'get', 'null');
     if(jsonData == 0){
