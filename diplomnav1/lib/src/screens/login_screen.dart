@@ -62,7 +62,7 @@ class LoginScreenState extends State<LoginScreen>{
       String? accessToken = await oauth.getAccessToken();
 
       Map<String, dynamic> payload = Jwt.parseJwt(accessToken!);
-      print(accessToken);
+      print("TUK" + accessToken + "TUK");
       print(payload);
       var userId = payload["oid"];
       var username = payload["name"];

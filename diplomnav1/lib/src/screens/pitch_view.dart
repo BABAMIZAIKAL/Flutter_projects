@@ -198,7 +198,7 @@ class PitchViewState extends State<PitchView>{
                       ElevatedButton(
                         onPressed: () async {
                           if(image == null){
-                            String url = apiUrl + '/comment/?user_id=' + apiUsername + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
+                            String url = apiUrl + '/comment/?user_id=' + oid + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
                             var dio = Dio();
                             try {
                               var response = await dio.post(url, data: null, options: Options(headers: {"Authorization": "Bearer " + (await SecureStorage.getToken() as String)},));
@@ -207,10 +207,16 @@ class PitchViewState extends State<PitchView>{
                               print(e);
                             }
                           }else{
-                            String url = apiUrl + '/comment/?user_id=' + apiUsername + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
+                            String url = apiUrl + '/comment/?user_id=' + oid + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
                             var dio = Dio();
                             //Uint8List postImage = File(image!.path).readAsBytesSync();
-                            List<int> imageBytes = await image!.readAsBytes();
+                            //List<int> imageBytes = await image!.readAsBytes();
+                            //String imageName = image!.path.split("/").last;
+                            //String imageName1 = imageName.split(".").first;
+                            var imageBytes = await image!.readAsBytesSync();
+                            print("bites");
+                            print(imageBytes);
+                            print("bites");
 
                             try {
                               var headers = {
@@ -218,8 +224,8 @@ class PitchViewState extends State<PitchView>{
                                 "Content-type": "image/jpeg",
                               };
                               //File file = File.fromUri(Uri.parse(image!.path));
-                              var response = await dio.post(url, data: imageBytes, options: Options(headers: headers,));
-                              print(response.data);
+                              var response = await dio.post(url, data: image, options: Options(headers: headers,));
+                              print(response.statusCode);
                             } catch (e) {
                               print(e);
                             }
