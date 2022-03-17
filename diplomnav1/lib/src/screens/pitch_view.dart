@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:math';
+import 'package:mime/mime.dart';
 
 
 import 'package:diplomnav1/src/Pitch/pitch.dart';
@@ -49,20 +50,26 @@ class PitchViewState extends State<PitchView>{
   String currComment = "";
   var headersImg;
 
+
   void getRequestPitchComments() async{
     String url = apiUrl + "/comment/all?pitchId=" + currentPitch.id;
     var jsonData = await sendRequest(url, 'get', null);
     comments = [];
 
     for(var p in jsonData){
+      String url = apiUrl + '/user/' + p['user_id'];
+
+      var jsonData = await sendRequest(url, 'get', 'null');
+
+      String commentUsername = jsonData["username"];
+
       if(p["attachment_uri"] != null){
-        //File currImg = await urlToFile(p["attachment_uri"]);
         setState(() {
-          comments.add(new Comment(p["user_id"], p["content"], p["attachment_uri"]));
+          comments.add(new Comment(commentUsername, p["content"], p["attachment_uri"]));
         });
       }else{
         setState(() {
-          comments.add(new Comment(p["user_id"], p["content"], p["attachment_uri"]));
+          comments.add(new Comment(commentUsername, p["content"], p["attachment_uri"]));
         });
       }
     }
@@ -76,6 +83,7 @@ class PitchViewState extends State<PitchView>{
       rating = average_rating;
     });
   }
+
   void setCommentHeaders() async{
     headersImg = {
       "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
@@ -94,7 +102,7 @@ class PitchViewState extends State<PitchView>{
 
   Widget build(context){
 
-
+    final ScrollController _scrollController = ScrollController();
     image = null;
 
     print("rating");
@@ -170,11 +178,13 @@ class PitchViewState extends State<PitchView>{
 
                         //controller: new FixedExtentScrollController(),
                         //scrollDirection: Axis.horizontal,
+                        controller: _scrollController,
                         shrinkWrap: true,
                         itemCount: comments.length,
                         itemBuilder: (context, index) {
                           final com = comments[index];
                           return Container(
+                            alignment: Alignment.center,
                             child: Column(
                               children: [
                                 ListTile(
@@ -222,9 +232,13 @@ class PitchViewState extends State<PitchView>{
                               var headers = {
                                 "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
                                 "Content-type": "image/jpeg",
+                                'Connection': 'keep-alive',
+                                'Content-Length': imageBytes!.length,
                               };
                               //File file = File.fromUri(Uri.parse(image!.path));
-                              var response = await dio.post(url, data: image, options: Options(headers: headers,));
+                              var response = await dio.post(url,
+                                  data: Stream.fromIterable(imageBytes.map((e) => [e])),
+                                  options: Options(contentType: lookupMimeType(image!.path),headers: headers));
                               print(response.statusCode);
                             } catch (e) {
                               print(e);
