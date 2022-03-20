@@ -4,7 +4,6 @@ class SecureStorage{
   static final _storage = FlutterSecureStorage();
   static const _keyToken = "accessToken";
   static const _keyOid = "oid";
-  String userType = "member";
   //String username = '';
 
 

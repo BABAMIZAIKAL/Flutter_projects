@@ -47,6 +47,7 @@ class PitchViewState extends State<PitchView>{
   late Pitch currentPitch;
   double rating = 0;
   File? image;
+  String? pitch_image;
   String currComment = "";
   var headersImg;
 
@@ -83,6 +84,13 @@ class PitchViewState extends State<PitchView>{
       rating = average_rating;
     });
   }
+  void getPitchImage() async {
+    String url = apiUrl + "/pitch/" + currentPitch.id;
+    var jsonData = await sendRequest(url, 'get', null);
+    setState(() {
+      pitch_image = jsonData["attachment_uri"];
+    });
+  }
 
   void setCommentHeaders() async{
     headersImg = {
@@ -98,6 +106,7 @@ class PitchViewState extends State<PitchView>{
     getRequestPitchComments();
     getRequestPitchRating();
     setCommentHeaders();
+    getPitchImage();
   }
 
   Widget build(context){
@@ -150,6 +159,12 @@ class PitchViewState extends State<PitchView>{
                     ],
                   ),
                 ),
+                Container(
+                  child:
+                    pitch_image != null ?
+                    Image.network(apiUrl + pitch_image!, headers: headersImg) : SizedBox(height: 15),
+                ),
+
                 Container(
                   child: Column(
                     children: [
@@ -245,13 +260,43 @@ class PitchViewState extends State<PitchView>{
                             }
                           }
 
-
                           setState(() {
                             getRequestPitchComments();
                           });
 
                         },
                         child: Text("Add Comment"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if(role == "USER"){
+                            if(image != null){
+                              String url = apiUrl + '/pitch/' + currentPitch.id + '/blob';
+                              var dio = Dio();
+                              var imageBytes = await image!.readAsBytesSync();
+
+                              try {
+                                var headers = {
+                                  "Authorization": "Bearer " + (await SecureStorage.getToken() as String),
+                                  "Content-type": "image/jpeg",
+                                  'Connection': 'keep-alive',
+                                  'Content-Length': imageBytes!.length,
+                                };
+                                //File file = File.fromUri(Uri.parse(image!.path));
+                                var response = await dio.patch(url,
+                                    data: Stream.fromIterable(imageBytes.map((e) => [e])),
+                                    options: Options(contentType: lookupMimeType(image!.path),headers: headers));
+                                print(response.statusCode);
+                              } catch (e) {
+                                print(e);
+                              }
+                              setState(() {
+                                getPitchImage();
+                              });
+                            }
+                          }
+                        },
+                        child: Text("Add Pitch image"),
                       ),
                       ElevatedButton(
                         onPressed: () {
@@ -314,6 +359,7 @@ class PitchViewState extends State<PitchView>{
                 var body = json.encode(data);
 
                 var jsonData = await sendRequest(url, 'post', body);
+                
 
               },
               child: Text(

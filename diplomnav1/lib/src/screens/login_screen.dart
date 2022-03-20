@@ -24,6 +24,7 @@ class LoginScreen extends StatefulWidget{
 String oid = '';
 String apiUrl = 'http://sportonapp.me/apigw/rest/api/v1';
 String apiUsername = '';
+String role = '';
 
 class LoginScreenState extends State<LoginScreen>{
 
@@ -86,8 +87,11 @@ class LoginScreenState extends State<LoginScreen>{
         var body = json.encode(data);
 
         var jsonData = await sendRequest(url, 'post', body);
+        role = jsonData["role"];
       }else{
         var jsonDate = await sendRequest(url + '/' + oid, 'get', null);
+        role = jsonDate["role"];
+        print(role);
         print(jsonDate);
       }
 

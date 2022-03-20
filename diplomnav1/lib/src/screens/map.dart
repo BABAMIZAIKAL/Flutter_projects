@@ -62,7 +62,7 @@ class MapState extends State<Map>{
     // currLng = '42.698334';
     // currLat = '23.319941';
 
-    String url = apiUrl + '/pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=10000&type=FOOTBALL';
+    String url = apiUrl + '/pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
     print(url);
     var jsonData = await sendRequest(url, 'get', 'null');
     if(jsonData == 0){
@@ -75,7 +75,7 @@ class MapState extends State<Map>{
         coords.add(LatLng(coord[0],coord[1]));
       }
       PitchLocation pitchLocation = PitchLocation(type: p['location']['type'], coordinates: coords , node_ids: p['location']['node_ids']);
-      Pitch pitch = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, wayId: p['wayId'], rolesRequired: ['rolesRequired']);
+      Pitch pitch = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, /*wayId: p['wayId'],*/ rolesRequired: ['rolesRequired'], pitch_image: p['attachment_uri']);
       _polygons.add(convertPitchToPolygon(pitch));
     }
     print(_polygons.length);
