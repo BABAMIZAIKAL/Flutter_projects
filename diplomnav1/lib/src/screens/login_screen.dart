@@ -12,7 +12,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 
 import 'homepage.dart';
-import 'package:diplomnav1/src/widgets/delay.dart';
 import 'package:diplomnav1/src/Storage/secureStorage.dart';
 
 class LoginScreen extends StatefulWidget{
@@ -29,7 +28,7 @@ String role = '';
 class LoginScreenState extends State<LoginScreen>{
 
 
-  static final Config config = new Config(
+  static final Config config = Config(
       tenant: "sportontestad",
       clientId: "17608c8d-7e70-4fb7-974e-c0fab81aaef6",
       scope: "openid 17608c8d-7e70-4fb7-974e-c0fab81aaef6 offline_access",
@@ -57,29 +56,23 @@ class LoginScreenState extends State<LoginScreen>{
 
   Future<void> _logIn() async {
     try {
-
       await oauth.login();
 
       String? accessToken = await oauth.getAccessToken();
 
       Map<String, dynamic> payload = Jwt.parseJwt(accessToken!);
-      print("TUK" + accessToken + "TUK");
-      print(payload);
-      var userId = payload["oid"];
+
+      oid = payload["oid"];
       var username = payload["name"];
       var mail = payload["emails"][0];
       apiUsername = username;
 
       SecureStorage.setToken(accessToken);
-      SecureStorage.setOid(userId);
-      oid = userId;
       String url = apiUrl + '/user';
 
       if(payload.containsKey("newUser") && payload["newUser"] == true){
-        print(userId + username + mail);
-
         Map data = {
-          'user_id': userId,
+          'user_id': oid,
           'username': username,
           'email' : mail
         };
@@ -91,10 +84,7 @@ class LoginScreenState extends State<LoginScreen>{
       }else{
         var jsonDate = await sendRequest(url + '/' + oid, 'get', null);
         role = jsonDate["role"];
-        print(role);
-        print(jsonDate);
       }
-
 
       if(accessToken != null){
         Future.delayed(Duration(seconds: 5),(){

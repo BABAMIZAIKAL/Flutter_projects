@@ -155,7 +155,6 @@ class PitchViewState extends State<PitchView>{
                             Text("Type: " + currentPitch.type),
                           ]
                       ),
-
                     ],
                   ),
                 ),
@@ -359,7 +358,7 @@ class PitchViewState extends State<PitchView>{
                 var body = json.encode(data);
 
                 var jsonData = await sendRequest(url, 'post', body);
-                
+
 
               },
               child: Text(

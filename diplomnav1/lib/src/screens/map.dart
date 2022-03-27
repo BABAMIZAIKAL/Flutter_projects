@@ -90,23 +90,16 @@ class MapState extends State<Map>{
 
   Polygon convertPitchToPolygon(Pitch a){
     List<LatLng> points = a.location.coordinates;
-    Polygon curr = new Polygon(
+    return Polygon(
       polygonId: PolygonId(a.id),
       points: points,
       strokeColor: Colors.yellow,
       fillColor: Colors.yellow.withOpacity(0.25),
       consumeTapEvents: true,
+      onTap: (){
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => PitchView(sentPitch: a)));
+      }
     );
-      return Polygon(
-        polygonId: PolygonId(a.id),
-        points: points,
-        strokeColor: Colors.yellow,
-        fillColor: Colors.yellow.withOpacity(0.25),
-        consumeTapEvents: true,
-        onTap: (){
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => PitchView(sentPitch: a)));
-        }
-      );
   }
 
 
@@ -143,10 +136,6 @@ class MapState extends State<Map>{
             mapType: MapType.hybrid,
             polygons: _polygons,
             myLocationEnabled: true,
-            onTap: (LatLng a){
-
-              _testMap(a);
-            },
           ),
         ],
       ),
