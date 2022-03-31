@@ -172,8 +172,6 @@ class PitchViewState extends State<PitchView>{
                         style: TextStyle(fontSize: 40),
                       ),
                       const SizedBox(height: 32,),
-                      //buildRating(),
-                      //const SizedBox(height: 32,),
                       TextButton(
                           onPressed: () => showRating(),
                           child: Text(
@@ -189,9 +187,6 @@ class PitchViewState extends State<PitchView>{
                   child: Column(
                     children: [
                       ListView.builder(
-
-                        //controller: new FixedExtentScrollController(),
-                        //scrollDirection: Axis.horizontal,
                         controller: _scrollController,
                         shrinkWrap: true,
                         itemCount: comments.length,
@@ -233,14 +228,7 @@ class PitchViewState extends State<PitchView>{
                           }else{
                             String url = apiUrl + '/comment/?user_id=' + oid + '&pitch_id=' + currentPitch.id + '&content=' + currComment;
                             var dio = Dio();
-                            //Uint8List postImage = File(image!.path).readAsBytesSync();
-                            //List<int> imageBytes = await image!.readAsBytes();
-                            //String imageName = image!.path.split("/").last;
-                            //String imageName1 = imageName.split(".").first;
                             var imageBytes = await image!.readAsBytesSync();
-                            print("bites");
-                            print(imageBytes);
-                            print("bites");
 
                             try {
                               var headers = {
@@ -249,7 +237,6 @@ class PitchViewState extends State<PitchView>{
                                 'Connection': 'keep-alive',
                                 'Content-Length': imageBytes!.length,
                               };
-                              //File file = File.fromUri(Uri.parse(image!.path));
                               var response = await dio.post(url,
                                   data: Stream.fromIterable(imageBytes.map((e) => [e])),
                                   options: Options(contentType: lookupMimeType(image!.path),headers: headers));
@@ -268,7 +255,7 @@ class PitchViewState extends State<PitchView>{
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          if(role == "USER"){
+                          if(role == "ADMIN"){
                             if(image != null){
                               String url = apiUrl + '/pitch/' + currentPitch.id + '/blob';
                               var dio = Dio();
