@@ -11,6 +11,7 @@ import 'package:diplomnav1/src/Request/sendRequest.dart';
 import 'package:diplomnav1/src/screens/homepage.dart';
 import 'package:diplomnav1/src/screens/login_screen.dart';
 import 'package:diplomnav1/src/screens/pitch_view.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 //import 'package:location/location.dart';
@@ -37,7 +38,7 @@ class MapState extends State<Map>{
   List<LatLng> polygonLatLngs = <LatLng>[];
   String? currLat;
   String? currLng;
-
+  String dropdownValue = 'All';
 
 
 
@@ -56,13 +57,16 @@ class MapState extends State<Map>{
     print("polygon");
   }
 
-  void fetchPitches() async {
+  void fetchPitches({pitchType:''}) async {
 
 
     // currLng = '42.698334';
     // currLat = '23.319941';
-
-    String url = apiUrl + '/pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=2000&type=FOOTBALL';
+    _polygons = new HashSet();
+    String url = apiUrl + '/pitch/locate?latitude='+currLat!+'&longitude='+currLng!+'&radius=5000';
+    if(!pitchType.isEmpty){
+      url += '&type=' + pitchType;
+    }
     print(url);
     var jsonData = await sendRequest(url, 'get', 'null');
     if(jsonData == 0){
@@ -78,7 +82,7 @@ class MapState extends State<Map>{
       Pitch pitch = Pitch(id: p['id'], name: p['name'], type: p['type'], location: pitchLocation, /*wayId: p['wayId'],*/ rolesRequired: ['rolesRequired'], pitch_image: p['attachment_uri']);
       _polygons.add(convertPitchToPolygon(pitch));
     }
-    print(_polygons.length);
+    //print(_polygons.length);
     setState(() {
       setPolygons(_polygons);
     });
@@ -123,7 +127,137 @@ class MapState extends State<Map>{
         ),
       ),
       appBar: new AppBar(
-        title: new Text("Hello")
+        title: new Text("Hello"),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 10.0),
+            child: PopupMenuButton(
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                    child: Row(children: [
+                      Text("Football"),
+                    ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'FOOTBALL');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Volleyball"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'VOLLEYBALL');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Basketball"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'BASKETBALL');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Badminton"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'BADMINTON');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Horse racing"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'HORSE_RACING');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Table soccer"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'TABLE_SOCCER');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Table tennis"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'PING_PONG');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Tennis"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'TENNIS');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Baseball"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'BASEBALL');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Boxing"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'BOXING');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Karting"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'KARTING');
+                    });
+                  },
+                ),
+                PopupMenuItem(
+                  child: Row(children: [
+                    Text("Swimming"),
+                  ],),
+                  onTap: () {
+                    setState(() {
+                      fetchPitches(pitchType: 'SWIMMING');
+                    });
+                  },
+                ),
+              ],
+              child: Icon(Icons.more_vert, size: 28.0,),
+            ),
+          ),
+        ],
       ),
 
       body: Stack(

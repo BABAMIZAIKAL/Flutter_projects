@@ -22,6 +22,8 @@ class HomepageState extends State<Homepage>{
   LocationData? _locationData;*/
   String latitudeData = "";
   String longtitudeData = "";
+  String hardcodeLat = "42.671101";
+  String hardcodeLng = "23.297514";
 
   @override
   void initState() {
@@ -32,13 +34,20 @@ class HomepageState extends State<Homepage>{
 
 
   void getCurrentLocation() async{
-    var position = await Geolocator.getLastKnownPosition();
-    setState(() {
-      latitudeData = '${position?.latitude}';
-      longtitudeData = '${position?.longitude}';
-    });
-  }
+    try{
+      var position = await Geolocator.getLastKnownPosition();
+      setState(() {
+        latitudeData = '${position?.latitude}';
+        longtitudeData = '${position?.longitude}';
+      });
+    }on Exception catch(e){
+      latitudeData = "42.671101";
+      longtitudeData = "23.297514";
+      print(e);
+    }
 
+  }
+//42.671101, 23.297514
   Widget build(context){
     return Scaffold(
       appBar: AppBar(
@@ -51,7 +60,8 @@ class HomepageState extends State<Homepage>{
             ? Navigator.push(
             context, MaterialPageRoute(
             builder: (context) => Map(geoLat: latitudeData!, geoLng: longtitudeData,)))
-                : null;
+                :
+            null;
           }, child: Text('Map'),
         ),
       )

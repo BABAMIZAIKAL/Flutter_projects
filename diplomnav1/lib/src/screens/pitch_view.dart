@@ -150,7 +150,7 @@ class PitchViewState extends State<PitchView>{
                     children: [
                       TableRow(
                           children: [
-                            Text("Id: " + currentPitch.id),
+                            //Text("Id: " + currentPitch.id),
                             Text("Name: " + currentPitch.name),
                             Text("Type: " + currentPitch.type),
                           ]
